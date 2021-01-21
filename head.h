@@ -32,8 +32,8 @@ typedef struct iNode{
 }iNode,*piNode;        
 //定义链表(索引表)的结点
 typedef struct index_Node{
-	iNode *firstz; //储存正确的      
-	iNode *firstf; //储存错误的   
+	iNode *first_T; //储存正确的      
+	iNode *first_F; //储存错误的   
 } inde,*pindex;
 
 typedef struct cnf{
@@ -50,17 +50,17 @@ typedef struct SqList{
 //函数的定义
 int createCNF(pcnf *L,char filename[80]);        //创建cnf内容
 int showCNF(pcnf L);     //展示cnf的元素
-int InitList(pcnf L,SqList &An);
+int InitList(pcnf L,SqList &Answer);
 int RemoveClause(pcnf L,int flag);
 int AddClause(pcnf L,int flag);
 int EmptyClause(pcnf L);
-int Findl(pcnf L,SqList &An);
-int DPLL(pcnf L,SqList &An,int now_l);
-int test(pcnf L,SqList &An);
+int Findl(pcnf L,SqList &Answer);
+int DPLL(pcnf L,SqList &Answer,int now_l);
+int test(pcnf L,SqList &Answer);
 int rule_1(char filename[80],int n);
 int rule_2(char filename[80],int n);
 int rule_3(char filename[80],int n);
 int write(char filename[80],int n);
 int WriteCNF(char filename[80],int n);
-int ResWrite_1(int res,double time,SqList &An,char filename[80]);
-int ResWrite_2(int res,double time,SqList &An,char filename[80]); 
+int ResWrite_SAT(int res,double time,SqList &Answer,char filename[80]);
+int ResWrite_PB(int res,double time,SqList &Answer,char filename[80],int n); 

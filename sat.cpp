@@ -35,7 +35,7 @@ int createCNF(pcnf *L,char filename[80]) {
 			}
 			fscanf(fp,"%c",&c);	
 		}
-        //第一行是p
+        //第一列是p
 		else if(c=='p') {
 			while(c!='\n'){
                 //快速读入的板子
@@ -54,8 +54,8 @@ int createCNF(pcnf *L,char filename[80]) {
 				(*L)->Index_List=(inde *)malloc((num+1)*sizeof(inde));     
                 //初始化索引表
 				for(i=0;i<=num;i++){                  
-					(*L)->Index_List[i].firstf=NULL;
-					(*L)->Index_List[i].firstz=NULL;
+					(*L)->Index_List[i].first_F=NULL;
+					(*L)->Index_List[i].first_T=NULL;
 				}
 				num=0; 
                 //处理掉空格之类的
@@ -74,6 +74,7 @@ int createCNF(pcnf *L,char filename[80]) {
             //把最后一个换行符去掉
 			fscanf(fp,"%c",&c);	
 		}
+		//这个flag就是统计正负
         //接着是正常的数字或者符号开头的情况
 		else if((c>='0'&&c<='9')||(c=='-')){
             //给这个变元开辟新的空间
@@ -104,14 +105,14 @@ int createCNF(pcnf *L,char filename[80]) {
                         //假的,添加:	                        
 						if(flag==0){                    
 						    q->l=-num;
-							r->next=(*L)->Index_List[num].firstf;
-							(*L)->Index_List[num].firstf=r;
+							r->next=(*L)->Index_List[num].first_F;
+							(*L)->Index_List[num].first_F=r;
 						}
                         //真的,添加:
 						else {                    
 							q->l=num;
-							r->next=(*L)->Index_List[num].firstz; 
-							(*L)->Index_List[num].firstz=r; 
+							r->next=(*L)->Index_List[num].first_T; 
+							(*L)->Index_List[num].first_T=r; 
 						}
 						num=0;//准备读取下一个元素
 						k++; 
@@ -131,7 +132,7 @@ int createCNF(pcnf *L,char filename[80]) {
 			p->l_count=k;//变元个数
 			k=0;//初始化
 			m++; //子句数目++
-			//子句数量少于给定
+			//子句数量少于给定,就继续申请接着来
 			if(m<(*L)->claunum){
 				p->next=(cNode *)malloc(sizeof(struct cNode));
 				p=p->next;
@@ -163,33 +164,31 @@ int showCNF(pcnf L){
 		if(p->mark==0) p=p->next; 
 		else{
             //打印句子的数目和句子有的变元个数
-			printf("第%d句有%d个文字   ",i++,p->l_count);
+			printf("%d %d",i++,p->l_count);
 		    q=p->firstl;
 		    j=1;
 		    while(q){
 		    	if(q->mark==0)  q=q->next;
 		    	else{
-		    		printf("第%d个文字为%d   ",j++,q->l);
+		    		printf("%d%d   ",j++,q->l);
 			        q=q->next;
 				}
 		    }
 		    printf("\n");
 		    p=p->next;
 		}
-		
 	}
 	return OK;
 }
 
-int InitList(pcnf L,SqList &An){//为存储答案的顺序表分配存储空间 
-	An.elem=(int *)malloc((L->varinum+1)*sizeof(int));//分配存储空间 
+int InitList(pcnf L,SqList &An){
+	An.elem=(int *)malloc((L->varinum+1)*sizeof(int));
 	if(!An.elem) {
-		return ERROR;//分配存储空间失败 
+		return ERROR;
 	};
-	An.length=L->varinum+1;//初始化线性表的长度为0 
+	An.length=L->varinum+1;
 	for(int i=1;i<An.length;i++){
-		An.elem[i]=0;                        //表示没有经过单子句简化赋值 
-		//printf("%d  ",An.elem[i]);                           查看程序运行进度，没有必要打开 
+		An.elem[i]=0;                        
 	}
 	return OK; 
 }

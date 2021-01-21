@@ -5,7 +5,7 @@ int main(){
     //cout<<"Hello,Wolrd!";
     //return 0;
     pcnf L; //建立cnf的物理存储结构
-	SqList An;//建立线性表
+	SqList Answer;//建立线性表
 	clock_t start, end;//计时的用处             
 	double duration;//运行时间的储存器
 	char filename[80];//打开的cnf文件的名字
@@ -51,7 +51,7 @@ int main(){
 								getchar();getchar();
 								break; 
 							} 
-	                        if(InitList(L,An)==OK) printf("链表创造成功\n"); 
+	                        if(InitList(L,Answer)==OK) printf("链表创造成功\n"); 
 	                        else{
 	                        	printf("链表创造失败\n");
 								getchar();getchar();
@@ -67,7 +67,7 @@ int main(){
 						case 3:
 						    printf("\n开始求解\n");
 						    start = clock(); 
-	                        if(DPLL(L,An,1)==OK){
+	                        if(DPLL(L,Answer,1)==OK){
 	                        	tag=1;
 	                        	printf("求解完毕¶\n");
 							}
@@ -81,14 +81,14 @@ int main(){
                             getchar();getchar();
                             break;
                         case 4:
-                        	if(test(L,An)==TRUE) printf("测试完毕\n");
+                        	if(test(L,Answer)==TRUE) printf("测试完毕\n");
                         	else printf("测试失败\n");
 							getchar();getchar();
                             break;
 						case 5:
 						    printf("\n求解SAT问题的解:\n");
-						    for(int i=1;i<An.length;i++){
-						    	if(An.elem[i]==-1)  printf("%5d",-i);
+						    for(int i=1;i<Answer.length;i++){
+						    	if(Answer.elem[i]==-1)  printf("%5d",-i);
 						    	else printf("%5d",i);
 						    	if(i%10==0)  printf("\n");
 	                        }
@@ -96,8 +96,8 @@ int main(){
                             break;
                         case 6:
                         	printf("\n写入解答中\n");
-                        	if(ResWrite_1(tag,duration,An,filename)==OK) printf("写入成功");
-                        	else printf("Ω写入失败\n");
+                        	if(ResWrite_SAT(tag,duration,Answer,filename)==OK) printf("写入成功");
+                        	else printf("写入失败\n");
                         	getchar();getchar();
                             break;
                         case 0:
@@ -125,7 +125,7 @@ int main(){
 	        				printf("请输入写入的文件(保存二进制数独)的名字\n");
 	        				scanf("%s",filename);
                             printf("请输入写入的文件(保存二进制数独)的维数\n");
-	        				scanf("%d",n);
+	        				scanf("%d",&n);
 	        				if(WriteCNF(filename,n)==OK)  printf("写入文件成功\n");
 							else printf("写入文件失败\n"); 
 							getchar();getchar();
@@ -137,7 +137,7 @@ int main(){
 								getchar();getchar();
 								break; 
 							} 
-	                        if(InitList(L,An)==OK) printf("初始化成功\n"); 
+	                        if(InitList(L,Answer)==OK) printf("初始化成功\n"); 
 	                        else{
 	                        	printf("初始化失败\n");
 								getchar();getchar();
@@ -147,7 +147,7 @@ int main(){
 							break; 
 						case 3:
 						    start = clock(); 
-	                        if(DPLL(L,An,1)==OK){
+	                        if(DPLL(L,Answer,1)==OK){
 	                        	tag=1;
 	                        	printf("完成\n");
 							}
@@ -162,22 +162,22 @@ int main(){
                             break;
                         case 4:
                         	printf("\n测试开始\n");
-                        	if(test(L,An)==TRUE) printf("成功\n");
+                        	if(test(L,Answer)==TRUE) printf("成功\n");
                         	else printf("失败\n");
 							getchar();getchar();
                             break;
 						case 5:
 						    printf("\nAnswer:\n");
-						    for(int i=1;i<An.length;i++){
-						    	if(An.elem[i]==-1)  printf("0 ");
+						    for(int i=1;i<Answer.length;i++){
+						    	if(Answer.elem[i]==-1)  printf("0 ");
 						    	else printf("1 ");
-						    	if(i%6==0)  printf("\n");
+						    	if(i%n==0)  printf("\n");
 	                        }
 	                        getchar();getchar();
                             break;
                         case 6:
                         	printf("\nResWrite\n");
-                        	if(ResWrite_2(tag,duration,An,filename)==OK) printf("写入成功\n");
+                        	if(ResWrite_PB(tag,duration,Answer,filename,n)==OK) printf("写入成功\n");
                         	else printf("写入失败\n");
                         	getchar();getchar();
                             break;

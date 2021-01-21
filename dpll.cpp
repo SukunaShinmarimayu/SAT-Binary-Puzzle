@@ -6,7 +6,7 @@ int RemoveClause(pcnf L,int flag){
     piNode r;//索引
     if(flag>0){
         //先删除子句
-        r=L->Index_List[flag].firstz;
+        r=L->Index_List[flag].first_T;
         while(r){
             //mark为0,代表子句从这个索引表里删除了
 			if(r->p_cnode->mark==0)   r=r->next;
@@ -17,7 +17,7 @@ int RemoveClause(pcnf L,int flag){
 				r=r->next;
 			}
         }
-        r=L->Index_List[flag].firstf; //接着删除含有-flag的子句
+        r=L->Index_List[flag].first_F; //接着删除含有-flag的子句
 		while(r){
             //如果已经被删掉了,那就退出,下一个
 			if(r->p_cnode->mark==0)  r=r->next;
@@ -42,7 +42,7 @@ int RemoveClause(pcnf L,int flag){
     }
     //如果这个flag是假的,也是一样,只不过二者顺序换一换
     else{
-		r=L->Index_List[-flag].firstf;
+		r=L->Index_List[-flag].first_F;
 		while(r){
 			if(r->p_cnode->mark==0)   r=r->next;
 			else{
@@ -52,7 +52,7 @@ int RemoveClause(pcnf L,int flag){
 				r=r->next;
 			}
 		}
-		r=L->Index_List[-flag].firstz; 
+		r=L->Index_List[-flag].first_T; 
 		while(r){
 			if(r->p_cnode->mark==0)  r=r->next;
 			else{
@@ -84,7 +84,7 @@ int AddClause(pcnf L,int flag){
 	piNode r;    //
     if(flag>0){
         //从令其为真的元素开始寻找
-        r=L->Index_List[flag].firstz;          
+        r=L->Index_List[flag].first_T;          
 		while(r){
             //如果没有被删除,跳过
 			if(r->p_cnode->mark==1)  r=r->next;
@@ -99,7 +99,7 @@ int AddClause(pcnf L,int flag){
 			}
 		}
         //原来的文字也退回来
-        r=L->Index_List[flag].firstf;      
+        r=L->Index_List[flag].first_F;      
 		while(r){
 			q=r->p_cnode->firstl;
 			while(q){
@@ -114,7 +114,7 @@ int AddClause(pcnf L,int flag){
 		}  
     }
     else{
-        r=L->Index_List[flag].firstf;
+        r=L->Index_List[flag].first_F;
         while(r){
             if(r->p_cnode->mark==1) r=r->next;
             else{
@@ -126,7 +126,7 @@ int AddClause(pcnf L,int flag){
                 r=r->next;
             }
         }
-        r=L->Index_List[flag].firstz;
+        r=L->Index_List[flag].first_T;
         while(r){
             q=r->p_cnode->firstl;
             while(q){
@@ -144,7 +144,7 @@ int AddClause(pcnf L,int flag){
     return OK;
 }
 //寻找我们想要的文字
-int Findl(pcnf L,SqList &An){
+int Findl(pcnf L,SqList &Answer){
 	pcNode p;
 	plNode q;
 	int i;
@@ -155,8 +155,8 @@ int Findl(pcnf L,SqList &An){
 			q=p->firstl;
 			while(q){
 				if(q->mark==1){
-					if(q->l>0) 	An.elem[q->l]=1;
-					else    An.elem[-(q->l)]=-1;
+					if(q->l>0) 	Answer.elem[q->l]=1;
+					else    Answer.elem[-(q->l)]=-1;
 					return q->l;
 				}
 				else q=q->next;
@@ -165,10 +165,11 @@ int Findl(pcnf L,SqList &An){
 		else p=p->next;
 	}
 	//单子句不存在，就寻找出现次数最多的那个变元
-	int *a=(int *)malloc((2*An.length-1)*sizeof(int));     //构建数组a，存储各变元出现的次数
-	for(i=0;i<2*An.length-1;i++){
+	int *a=(int *)malloc((2*Answer.length-1)*sizeof(int));     //构建数组a，哈希表
+	for(i=0;i<2*Answer.length-1;i++){
 		a[i]=0;
 	}
+	int position;
 	p=L->firstc; 
 	while(p){                //记录各变元出现的次数 
 		if(p->mark==0) p=p->next;
@@ -178,8 +179,14 @@ int Findl(pcnf L,SqList &An){
                 //表示已经被删除了,不成立
 				if(q->mark==0) q=q->next;
 				else{
-					if(q->l>0) a[2*(q->l)-1]++;
-					else if(q->l<0)    a[2*(-(q->l))]++;
+					if(q->l>0) {
+						position=2*(q->l)-1;
+						a[position]++;
+					}
+					else if(q->l<0)    {
+						position=2*(-(q->l));
+						a[position]++;
+					}
 					q=q->next;
 				}
 			}
@@ -187,20 +194,21 @@ int Findl(pcnf L,SqList &An){
 		}
 	} 
     //打个哈希就行了
-	for(i=1;i<2*An.length-1;i++){    //找出出现次数的最大值 
+	for(i=1;i<2*Answer.length-1;i++){    //找出出现次数的最大值 
 		if(a[i]>flag)  flag=a[i];
 	} 
-	for(i=1;i<2*An.length-1;i++){  //找到变元 
+	for(i=1;i<2*Answer.length-1;i++){  //找到变元 
 		if(a[i]==flag)  break;
 	}
 	free(a);
     //这里是判断究竟是TRUE还是FALSE
+	//换回来
 	if(i%2) {
-		An.elem[(i+1)/2]=1;
+		Answer.elem[(i+1)/2]=1;
 		 return ((i+1)/2);
 	}
 	else{
-		An.elem[i/2]=-1;
+		Answer.elem[i/2]=-1;
 		 return (-(i/2));
 	}
 }
@@ -217,47 +225,38 @@ int EmptyClause(pcnf L){
 }
 //now_l就是上一步表现为真的变量
 //如果传的是负数,就代表是假的
-int DPLL(pcnf L,SqList &An,int now_l){
-    int next_l;//下一个关键字
-    //如果L的子句的个数为0,那么这个是成立的
-    if(L->claunum==0) return OK;
-    else{
-        //如果有空子句:把结果抹除,并且返回无解
-        if(EmptyClause(L)==OK){
-            //处理now
-            if(AddClause(L,now_l)!=OK) printf("Fail!\n");
-            if(now_l>0) An.elem[now_l]=0;
-            else An.elem[-now_l]=0;
-            return FALSE;
-        }
-        //找不到空子句,那就说明这个命题暂时可以解
-        else{
-            //寻找下一个为真的命题变元
-            next_l=Findl(L,An);
-            //找不到,那这个命题就是不可以满足的
-            if(next_l==0) return FALSE;
-            if(RemoveClause(L,next_l)!=OK) printf("Failed!\n");
-            //用下一个元素进行化简
-            if (DPLL(L,An,next_l)==OK) return OK;
-            else{
-                //还原到原来的形式
-                if(AddClause(L,next_l)!=OK) printf("Failed\n");
-				if(RemoveClause(L,-next_l)!=OK) printf("Failed\n");
-                //如果找到的next_l可以化简,那么就可以把最后的结果写进去
-                //如果不行,看看回来行不行
-                if(DPLL(L,An,-next_l)==OK){
-					if(next_l>0) An.elem[next_l]=-1;
-					else  An.elem[-next_l]=1;
+int DPLL(pcnf L,SqList &Answer,int now_l){
+    int next_l=0;
+	if(L->claunum==0) return OK;
+	else{
+		if(EmptyClause(L)==OK){
+			//回溯
+			AddClause(L,now_l);
+			if(now_l>0) Answer.elem[now_l]=0;
+			else Answer.elem[-now_l]=0;
+			return FALSE;
+		} 
+		else{
+			next_l=Findl(L,Answer);
+			if(!next_l) return FALSE;
+			RemoveClause(L,next_l);
+			if(DPLL(L,Answer,next_l)==OK){
+
+				return OK;
+			}
+			else{
+				AddClause(L,next_l);
+				RemoveClause(L,-next_l);
+				if(DPLL(L,Answer,-next_l)!=OK){
+					Answer.elem[next_l]=0;
+					return FALSE;
+				}
+				else{
+					if(next_l>0) Answer.elem[next_l]=0;
+					else Answer.elem[next_l]=1;
 					return OK;
 				}
-                //如果不能化简,可以近似认为是无解
-                else{
-                    if(AddClause(L,-next_l)!=OK) printf("Failed!\n");  
-                    if(next_l>0) An.elem[next_l]=0;
-					else An.elem[-next_l]=0;
-                    return FALSE;
-                }               
-            }            
-        }
-    }
+			}
+		}
+	}
 }
