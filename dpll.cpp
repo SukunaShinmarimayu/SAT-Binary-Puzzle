@@ -13,7 +13,7 @@ int RemoveClause(pcnf L,int flag){
 			else{
 				r->p_cnode->mark=0;//标记为删除
 				r->p_cnode->flag=flag;//标记因为谁而倍删除
-				L->claunum--;//子句的个数减少
+				L->clau_num--;//子句的个数减少
 				r=r->next;
 			}
         }
@@ -23,7 +23,7 @@ int RemoveClause(pcnf L,int flag){
 			if(r->p_cnode->mark==0)  r=r->next;
 			else{
                 //如果没有删掉,就删除子句的里面的文字
-				q=r->p_cnode->firstl;
+				q=r->p_cnode->first_l;
 				while(q){
                     //删除掉里面的文字
 					if(q->mark==0)  q=q->next;
@@ -48,7 +48,7 @@ int RemoveClause(pcnf L,int flag){
 			else{
 				r->p_cnode->mark=0;
 				r->p_cnode->flag=flag;
-				L->claunum--;
+				L->clau_num--;
 				r=r->next;
 			}
 		}
@@ -56,7 +56,7 @@ int RemoveClause(pcnf L,int flag){
 		while(r){
 			if(r->p_cnode->mark==0)  r=r->next;
 			else{
-				q=r->p_cnode->firstl;
+				q=r->p_cnode->first_l;
 				while(q){
 					if(q->mark==0)  q=q->next;
 					else{
@@ -73,7 +73,7 @@ int RemoveClause(pcnf L,int flag){
 		} 
 	}
 	
-    L->varinum--; 
+    L->vari_num--; 
 	return OK;
     //最后文字个数-1
 }
@@ -93,7 +93,7 @@ int AddClause(pcnf L,int flag){
 				if(r->p_cnode->flag==flag){
 					r->p_cnode->mark=1;
 					r->p_cnode->flag=0;
-					L->claunum++;
+					L->clau_num++;
 				}
 				r=r->next;
 			}
@@ -101,7 +101,7 @@ int AddClause(pcnf L,int flag){
         //原来的文字也退回来
         r=L->Index_List[flag].first_F;      
 		while(r){
-			q=r->p_cnode->firstl;
+			q=r->p_cnode->first_l;
 			while(q){
 				if(q->mark==0&&q->l==-flag){
 					q->mark=1;
@@ -121,14 +121,14 @@ int AddClause(pcnf L,int flag){
                 if(r->p_cnode->flag==flag){
                     r->p_cnode->mark=1;
                     r->p_cnode->flag=0;
-					L->claunum++;
+					L->clau_num++;
                 }
                 r=r->next;
             }
         }
         r=L->Index_List[flag].first_T;
         while(r){
-            q=r->p_cnode->firstl;
+            q=r->p_cnode->first_l;
             while(q){
                 if(q->mark==0&&q->l==-flag){
 					q->mark=1;
@@ -140,7 +140,7 @@ int AddClause(pcnf L,int flag){
             r=r->next;
         }
     }
-    L->varinum++;
+    L->vari_num++;
     return OK;
 }
 //寻找我们想要的文字
@@ -149,10 +149,10 @@ int Findl(pcnf L,SqList &Answer){
 	plNode q;
 	int i;
 	int flag=0; 
-	p=L->firstc;
+	p=L->first_c;
 	while(p){
 		if(p->mark==1&&p->l_count==1){      //寻找单子句 
-			q=p->firstl;
+			q=p->first_l;
 			while(q){
 				if(q->mark==1){
 					if(q->l>0) 	Answer.elem[q->l]=1;
@@ -170,11 +170,11 @@ int Findl(pcnf L,SqList &Answer){
 		a[i]=0;
 	}
 	int position;
-	p=L->firstc; 
+	p=L->first_c; 
 	while(p){                //记录各变元出现的次数 
 		if(p->mark==0) p=p->next;
 		else{
-			q=p->firstl;
+			q=p->first_l;
 			while(q){
                 //表示已经被删除了,不成立
 				if(q->mark==0) q=q->next;
@@ -215,7 +215,7 @@ int Findl(pcnf L,SqList &Answer){
 //寻找空子句
 int EmptyClause(pcnf L){
     //指导第一个元素        
-	pcNode p=L->firstc;
+	pcNode p=L->first_c;
     //用while循环寻找空子句
 	while(p){
 		if(p->l_count==0&&p->mark==1) return OK;
@@ -227,7 +227,7 @@ int EmptyClause(pcnf L){
 //如果传的是负数,就代表是假的
 int DPLL(pcnf L,SqList &Answer,int now_l){
     int next_l=0;
-	if(L->claunum==0) return OK;
+	if(L->clau_num==0) return OK;
 	else{
 		if(EmptyClause(L)==OK){
 			//回溯
@@ -259,4 +259,25 @@ int DPLL(pcnf L,SqList &Answer,int now_l){
 			}
 		}
 	}
+}
+bool test(pcnf L,SqList &Answer){
+	int flag;
+	pcNode p;
+	plNode l;
+	p=L->first_c;
+	while(p){
+		flag=0;
+		l=p->first_l;
+		while(l){
+			if(((l->l>0)&&(Answer.elem[l->l]==1))||((l->l<0)&&(Answer.elem[-(l->l)]==-1))){
+				flag=1;
+				break;
+			}
+			else l=l->next;
+		}
+		if(flag==0) break;
+		p=p->next;
+	}
+	if(flag==0)  return FALSE;
+	else return TRUE;
 }

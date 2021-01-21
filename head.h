@@ -22,7 +22,7 @@ typedef struct cNode{
 	int l_count; 	//文字(变元)的个数
 	int flag;           //记录该子句因为flag而被删除，初始值为0 
 	int mark;            //标记该子句是否被删除 ，初始值为1 
-	lNode *firstl;          //第一个文字的结点
+	lNode *first_l;          //第一个文字的结点
 	struct cNode *next;        //下一个句子结点
 }cNode,*pcNode;     
 //定义链表(索引)的结点
@@ -37,9 +37,9 @@ typedef struct index_Node{
 } inde,*pindex;
 
 typedef struct cnf{
-	int varinum;        //变元数目
-	int claunum;        //句子的数目
-	cNode *firstc;      //第一个句子
+	int vari_num;        //变元数目
+	int clau_num;        //句子的数目
+	cNode *first_c;      //第一个句子
 	pindex Index_List;   //解的集合
 }cnf,*pcnf;          
 //线性表
@@ -56,11 +56,11 @@ int AddClause(pcnf L,int flag);
 int EmptyClause(pcnf L);
 int Findl(pcnf L,SqList &Answer);
 int DPLL(pcnf L,SqList &Answer,int now_l);
-int test(pcnf L,SqList &Answer);
-int rule_1(char filename[80],int n);
-int rule_2(char filename[80],int n);
-int rule_3(char filename[80],int n);
-int write(char filename[80],int n);
-int WriteCNF(char filename[80],int n);
-int ResWrite_SAT(int res,double time,SqList &Answer,char filename[80]);
-int ResWrite_PB(int res,double time,SqList &Answer,char filename[80],int n); 
+bool test(pcnf L,SqList &Answer);
+int rule_1(char* filename,int n);
+int rule_2(char* filename,int n);
+int rule_3(char* filename,int n);
+int write(char* filename,int n);
+int WriteCNF(char* filename,int n);
+int ResWrite_SAT(int res,double time,SqList &Answer,char* filename);
+int ResWrite_PB(int res,double time,SqList &Answer,char* filename,int n); 

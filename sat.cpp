@@ -12,7 +12,7 @@ int createCNF(pcnf *L,char filename[80]) {
 	p->flag=0;
 	p->mark=1;
     //L的第一个语句时p
-	(*L)->firstc=p;
+	(*L)->first_c=p;
 	FILE *fp;
 	int num=0;
 	int k=0;   //变元个数           
@@ -31,9 +31,9 @@ int createCNF(pcnf *L,char filename[80]) {
         //第一行是c,跳过
 		if(c=='c'){            
 			while(c!='\n'){
-				fscanf(fp,"%c",&c);
+				c=fgetc(fp);
 			}
-			fscanf(fp,"%c",&c);	
+			c=fgetc(fp);
 		}
         //第一列是p
 		else if(c=='p') {
@@ -41,15 +41,15 @@ int createCNF(pcnf *L,char filename[80]) {
                 //快速读入的板子
                 //读入第一行
 				while(c<'0'||c>'9'){
-				    fscanf(fp,"%c",&c);
+				    c=fgetc(fp);
 			    }
 			    while(c>='0'&&c<='9'){        
 				    num=num*10;
 				    num+=c-'0';
-				    fscanf(fp,"%c",&c); 
+				    c=fgetc(fp);
 			    }
                 //把这个数字加进去
-			    (*L)->varinum=num;//改变变元的个数
+			    (*L)->vari_num=num;//改变变元的个数
                 //申请索引表
 				(*L)->Index_List=(inde *)malloc((num+1)*sizeof(inde));     
                 //初始化索引表
@@ -60,19 +60,19 @@ int createCNF(pcnf *L,char filename[80]) {
 				num=0; 
                 //处理掉空格之类的
 				while(c<'0'||c>'9'){
-				    fscanf(fp,"%c",&c);
+				    c=fgetc(fp);
 			    }
                 //接着输入变元的句子数
 				while(c>='0'&&c<='9'){       
 				    num=num*10;
 				    num+=c-'0';
-				    fscanf(fp,"%c",&c); 
+				    c=fgetc(fp);
 			    }
-				(*L)->claunum=num;        
+				(*L)->clau_num=num;        
 				num=0;  
 			}
             //把最后一个换行符去掉
-			fscanf(fp,"%c",&c);	
+			c=fgetc(fp);
 		}
 		//这个flag就是统计正负
         //接着是正常的数字或者符号开头的情况
@@ -80,7 +80,7 @@ int createCNF(pcnf *L,char filename[80]) {
             //给这个变元开辟新的空间
 			q=(lNode *)malloc(sizeof(struct lNode));
 			q->mark=1;
-			p->firstl=q;
+			p->first_l=q;
             //p的第一个元素就是p
             //一直读入
 			while(c!='\n'){
@@ -91,13 +91,13 @@ int createCNF(pcnf *L,char filename[80]) {
 						while((c>='0'&&c<='9')||(c=='-')){
 							if(c=='-'){
                                 //如果是负号的,那就认为是错误的
-							    fscanf(fp,"%c",&c);
+							    c=fgetc(fp);
 								flag=0;	
 							}
                             //快速读入的板子
 							num=num*10;
 				            num+=c-'0';
-				            fscanf(fp,"%c",&c);  
+				            c=fgetc(fp);
 						}
                         //建设索引
 						r=(iNode *)malloc(sizeof(struct iNode));
@@ -117,7 +117,7 @@ int createCNF(pcnf *L,char filename[80]) {
 						num=0;//准备读取下一个元素
 						k++; 
 					}
-					fscanf(fp,"%c",&c);
+					c=fgetc(fp);
                     //如果遇到0,就代表着一行已经结束了
 					if(c=='0') q->next=NULL;
 					else{
@@ -126,14 +126,15 @@ int createCNF(pcnf *L,char filename[80]) {
 						q->mark=1;
 					}
 				}
-				fscanf(fp,"%c",&c);
+				//换行符
+				c=fgetc(fp);
 			}
-			fscanf(fp,"%c",&c);
+			c=fgetc(fp);
 			p->l_count=k;//变元个数
 			k=0;//初始化
 			m++; //子句数目++
 			//子句数量少于给定,就继续申请接着来
-			if(m<(*L)->claunum){
+			if(m<(*L)->clau_num){
 				p->next=(cNode *)malloc(sizeof(struct cNode));
 				p=p->next;
 				p->flag=0;
@@ -142,7 +143,7 @@ int createCNF(pcnf *L,char filename[80]) {
             //等于给定
 			else p->next=NULL;
 		}
-		else fscanf(fp,"%c",&c);//在否则,消除其他字符的影响	
+		else c=fgetc(fp);//在否则,消除其他字符的影响	
 	}
 	fclose(fp);
 	return OK; 
@@ -151,13 +152,13 @@ int createCNF(pcnf *L,char filename[80]) {
 //展示CNF文件
 int showCNF(pcnf L){
     //空语句
-	if(L->claunum==0){
+	if(L->clau_num==0){
 		printf("cnf是空的\n");
 		return OK; 
 	}
-	pcNode p=L->firstc;
-	plNode q=p->firstl;   
-	printf("cnf的变元数%dcnf的语句数%d\n",L->varinum,L->claunum);
+	pcNode p=L->first_c;
+	plNode q=p->first_l;   
+	printf("cnf的变元数%dcnf的语句数%d\n",L->vari_num,L->clau_num);
 	int i=1;
 	int j; 
 	while(p){
@@ -165,7 +166,7 @@ int showCNF(pcnf L){
 		else{
             //打印句子的数目和句子有的变元个数
 			printf("%d %d",i++,p->l_count);
-		    q=p->firstl;
+		    q=p->first_l;
 		    j=1;
 		    while(q){
 		    	if(q->mark==0)  q=q->next;
@@ -182,11 +183,11 @@ int showCNF(pcnf L){
 }
 
 int InitList(pcnf L,SqList &An){
-	An.elem=(int *)malloc((L->varinum+1)*sizeof(int));
+	An.elem=(int *)malloc((L->vari_num+1)*sizeof(int));
 	if(!An.elem) {
 		return ERROR;
 	};
-	An.length=L->varinum+1;
+	An.length=L->vari_num+1;
 	for(int i=1;i<An.length;i++){
 		An.elem[i]=0;                        
 	}
